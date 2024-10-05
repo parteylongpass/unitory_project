@@ -1,9 +1,13 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:unitory_project/common/const/colors.dart';
 import 'package:unitory_project/common/layout/default_layout.dart';
+import 'package:unitory_project/user/view/email_login_screen.dart';
 import 'package:unitory_project/user/view/login_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
   runApp(const _App());
 }
 
@@ -14,7 +18,7 @@ class _App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: DefaultLayout(child: LoginScreen())
+      home: LoginScreen(),
     );
   }
 }

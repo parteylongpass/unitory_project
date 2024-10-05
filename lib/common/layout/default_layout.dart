@@ -17,18 +17,19 @@ class DefaultLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: renderAppbar(),
+      appBar: renderAppbar(context),
       backgroundColor: backgroundColor ?? Colors.white,
       body: child,
       bottomNavigationBar: bottomNavigationBar,
     );
   }
 
-  AppBar? renderAppbar() {
+  AppBar? renderAppbar(BuildContext context) {
     if (title == null) {
       return null;
     } else {
       return AppBar(
+        leading: IconButton(onPressed: () {Navigator.pop(context);}, icon: Icon(Icons.arrow_back_ios)),
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(
