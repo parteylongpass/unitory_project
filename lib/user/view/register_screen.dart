@@ -1,7 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:unitory_project/common/layout/default_layout.dart';
-import 'package:unitory_project/user/view/login_success_screen.dart';
+import 'package:unitory_project/user/view/register_success_screen.dart';
 
 import '../../common/component/custom_button.dart';
 import '../../common/component/custom_text_form_field.dart';
@@ -130,9 +131,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
           email: _emailController.text,
           password: _pwController.text,
         );
+
+        final db = FirebaseFirestore.instance;
+        final String email = _emailController.text;
+        final user = <String, String>{
+          "name": '${email.substring(0, email.indexOf('@'))}',
+          "email": _emailController.text,
+        };
+        credential.user!.sendEmailVerification(); // 비즈니스의 관점에서 빼는 게 좋을지도...
+        await db
+            .collection("users") // 여러 문서를 포함하는 폴더
+            .doc(credential.user!.uid) // 하나의 문서 -> 하나의 데이터 객체
+            .set(user)
+            .onError((e, _) => print("Error writing document: $e"));
+
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => LoginSuccessScreen(),
+            builder: (_) => RegisterSuccessScreen(email: _emailController.text,),
           ),
         );
       } on FirebaseAuthException catch (e) {
