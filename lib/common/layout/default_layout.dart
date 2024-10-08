@@ -29,7 +29,11 @@ class DefaultLayout extends StatelessWidget {
       return null;
     } else {
       return AppBar(
-        leading: IconButton(onPressed: () {Navigator.pop(context);}, icon: Icon(Icons.arrow_back_ios)),
+        leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(Icons.arrow_back_ios)),
         backgroundColor: Colors.white,
         elevation: 0,
         title: Text(

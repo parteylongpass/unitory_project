@@ -4,7 +4,7 @@ import 'package:unitory_project/common/component/custom_button.dart';
 import 'package:unitory_project/common/component/custom_text_form_field.dart';
 import 'package:unitory_project/common/const/colors.dart';
 import 'package:unitory_project/common/layout/default_layout.dart';
-import 'package:unitory_project/main/main_screen.dart';
+import 'package:unitory_project/common/view/root_tab.dart';
 import 'package:unitory_project/user/view/register_screen.dart';
 
 class EmailLoginScreen extends StatefulWidget {
@@ -34,13 +34,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
               SizedBox(
                 height: 48.0,
               ),
-              Text(
-                '이메일로 로그인',
-                style: TextStyle(
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              _Title(),
               SizedBox(
                 height: 96.0,
               ),
@@ -90,31 +84,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                     SizedBox(
                       height: 16.0,
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '혹시 회원이 아니신가요?  ',
-                          style: TextStyle(color: BODY_TEXT_COLOR),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => RegisterScreen(),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            '회원가입',
-                            style: TextStyle(
-                              color: BODY_TEXT_COLOR,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                   _RegisterText(context: context),
                   ],
                 ),
               ),
@@ -135,7 +105,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
         if (credential.user!.emailVerified) {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => MainScreen(),
+              builder: (_) => RootTab(),
             ),
           );
         } else {
@@ -169,3 +139,55 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
     }
   }
 }
+
+class _Title extends StatelessWidget {
+  const _Title({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      '이메일로 로그인',
+      style: TextStyle(
+        fontSize: 24.0,
+        fontWeight: FontWeight.w700,
+      ),
+    );
+  }
+}
+
+class _RegisterText extends StatelessWidget {
+  final BuildContext context;
+
+  const _RegisterText({super.key, required this.context});
+
+  @override
+  Widget build(BuildContext context) {
+    return  Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          '혹시 회원이 아니신가요?  ',
+          style: TextStyle(color: BODY_TEXT_COLOR),
+        ),
+        GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => RegisterScreen(),
+              ),
+            );
+          },
+          child: Text(
+            '회원가입하기',
+            style: TextStyle(
+              color: BODY_TEXT_COLOR,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+
