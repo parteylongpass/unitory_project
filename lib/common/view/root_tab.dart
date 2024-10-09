@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:unitory_project/providers/login_provider.dart';
 
 import '../const/colors.dart';
 
@@ -21,6 +23,9 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    // Provider가 잘 동작하는지 테스트
+    final user = Provider.of<LoginProvider>(context, listen: false).user;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -55,7 +60,7 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
       body: TabBarView(
         children: [
           Center(
-            child: Text('page0'),
+            child: Text('${user!.email}'),
           ),
           Center(
             child: Text('page1'),

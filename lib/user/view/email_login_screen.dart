@@ -1,11 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:unitory_project/common/component/custom_button.dart';
 import 'package:unitory_project/common/component/custom_text_form_field.dart';
 import 'package:unitory_project/common/const/colors.dart';
 import 'package:unitory_project/common/layout/default_layout.dart';
 import 'package:unitory_project/common/view/root_tab.dart';
 import 'package:unitory_project/user/view/register_screen.dart';
+import 'package:unitory_project/providers/login_provider.dart';
 
 class EmailLoginScreen extends StatefulWidget {
   const EmailLoginScreen({super.key});
@@ -84,7 +86,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                     SizedBox(
                       height: 16.0,
                     ),
-                   _RegisterText(context: context),
+                    _RegisterText(context: context),
                   ],
                 ),
               ),
@@ -96,47 +98,50 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
   }
 
   Future<void> _onLoginButtonTap() async {
-    if (_formKey.currentState!.validate()) {
-      try {
-        final credential = await FirebaseAuth.instance
-            .signInWithEmailAndPassword(
-                email: _emailController.text, password: _pwController.text);
-
-        if (credential.user!.emailVerified) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => RootTab(),
-            ),
+      if (_formKey.currentState!.validate()) {
+        try {
+          await Provider.of<LoginProvider>(context, listen: false).signInWithEmailAndPassword(
+            _emailController.text,
+            _pwController.text,
           );
-        } else {
-          // 인증 메일 재발송을 너무 자주 하지 않도록 예외 처리 추가
-          try {
-            await credential.user!.sendEmailVerification();
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('인증 메일을 다시 확인해주세요!'),
+
+          final user = Provider.of<LoginProvider>(context, listen: false).user;
+
+          if (user!.emailVerified) {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => RootTab(),
               ),
             );
-          } on FirebaseAuthException catch (e) {
-            if (e.code == 'too-many-requests') {
+          } else {
+            // 인증 메일 재발송을 너무 자주 하지 않도록 예외 처리 추가
+            try {
+              await user.sendEmailVerification();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요.'),
+                  content: Text('인증 메일을 다시 확인해주세요!'),
                 ),
               );
-            } else {
-              print(e);
+            } on FirebaseAuthException catch (e) {
+              if (e.code == 'too-many-requests') {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해주세요.'),
+                  ),
+                );
+              } else {
+                print(e);
+              }
             }
           }
-        }
-      } on FirebaseAuthException catch (e) {
-        if (e.code == 'user-not-found') {
-          print('No user found for that email.');
-        } else if (e.code == 'wrong-password') {
-          print('Wrong password provided for that user.');
+        } on FirebaseAuthException catch (e) {
+          if (e.code == 'user-not-found') {
+            print('No user found for that email.');
+          } else if (e.code == 'wrong-password') {
+            print('Wrong password provided for that user.');
+          }
         }
       }
-    }
   }
 }
 
@@ -162,7 +167,7 @@ class _RegisterText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
@@ -189,5 +194,3 @@ class _RegisterText extends StatelessWidget {
     );
   }
 }
-
-
