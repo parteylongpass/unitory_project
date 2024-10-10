@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:unitory_project/Item/view/item_rent_screen.dart';
 import 'package:unitory_project/providers/login_provider.dart';
 
 import '../const/colors.dart';
@@ -18,7 +19,11 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    tabController = TabController(length: 3, vsync: this);
+    tabController = TabController(
+      length: 3,
+      vsync: this,
+      animationDuration: Duration.zero,
+    );
   }
 
   @override
@@ -28,6 +33,7 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.white,
         title: Text(
           'UNITORY',
           style: TextStyle(
@@ -57,13 +63,46 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
           )
         ],
       ),
+      floatingActionButton: Container(
+        width: 84.0,
+        height: 44.0,
+        child: FloatingActionButton(
+          elevation: 2.0,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => ItemRentScreen(),
+              ),
+            );
+          },
+          child: FittedBox(
+            child: Row(
+              children: [
+                Icon(Icons.add),
+                Text(
+                  '글쓰기',
+                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w900),
+                )
+              ],
+            ),
+          ),
+          backgroundColor: PRIMARY_COLOR,
+          foregroundColor: Colors.white,
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: TabBarView(
         children: [
           Center(
             child: Text('${user!.email}'),
           ),
-          Center(
-            child: Text('page1'),
+          Container(
+            color: Colors.redAccent,
+            child: Center(
+              child: Text('page1'),
+            ),
           ),
           Center(
             child: Text('page2'),
@@ -73,17 +112,27 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
         physics: NeverScrollableScrollPhysics(),
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_filled, size: 30.0,),
+            icon: Icon(
+              Icons.home_filled,
+              size: 30.0,
+            ),
             label: '홈',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.question_answer_rounded, size: 30.0,),
+            icon: Icon(
+              Icons.question_answer_rounded,
+              size: 30.0,
+            ),
             label: '채팅',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person, size: 30.0,),
+            icon: Icon(
+              Icons.person,
+              size: 30.0,
+            ),
             label: '마이페이지',
           ),
         ],
@@ -102,4 +151,3 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
     );
   }
 }
-
