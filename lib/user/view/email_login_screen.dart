@@ -30,67 +30,70 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
           horizontal: 24.0,
         ),
         child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 48.0,
-              ),
-              _Title(),
-              SizedBox(
-                height: 96.0,
-              ),
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    CustomTextFormField(
-                      onChanged: (String value) {},
-                      hintText: '이메일을 입력해주세요',
-                      controller: _emailController,
-                      validator: (value) {
-                        if (value.isEmpty) {
-                          return '이메일을 입력해주세요';
-                        } else {
-                          return null;
-                        }
-                      },
-                    ),
-                    SizedBox(
-                      height: 8.0,
-                    ),
-                    CustomTextFormField(
-                      onChanged: (String value) {},
-                      hintText: '비밀번호를 입력해주세요',
-                      obscureText: true,
-                      controller: _pwController,
-                      validator: (value) {
-                        if (value.isEmpty) {
-                          return '비밀번호를 입력해주세요';
-                        } else {
-                          return null;
-                        }
-                      },
-                    ),
-                    SizedBox(
-                      height: 20.0,
-                    ),
-                    GestureDetector(
-                      onTap: _onLoginButtonTap,
-                      child: CustomButton(
-                        text: '로그인',
-                        textColor: Colors.white,
-                        bgColor: PRIMARY_COLOR,
-                      ),
-                    ),
-                    SizedBox(
-                      height: 16.0,
-                    ),
-                    _RegisterText(context: context),
-                  ],
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 48.0,
                 ),
-              ),
-            ],
+                _Title(),
+                SizedBox(
+                  height: 96.0,
+                ),
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      CustomTextFormField(
+                        onChanged: (String value) {},
+                        hintText: '이메일을 입력해주세요',
+                        controller: _emailController,
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return '이메일을 입력해주세요';
+                          } else {
+                            return null;
+                          }
+                        },
+                      ),
+                      SizedBox(
+                        height: 8.0,
+                      ),
+                      CustomTextFormField(
+                        onChanged: (String value) {},
+                        hintText: '비밀번호를 입력해주세요',
+                        obscureText: true,
+                        controller: _pwController,
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return '비밀번호를 입력해주세요';
+                          } else {
+                            return null;
+                          }
+                        },
+                      ),
+                      SizedBox(
+                        height: 20.0,
+                      ),
+                      GestureDetector(
+                        onTap: _onLoginButtonTap,
+                        child: CustomButton(
+                          text: '로그인',
+                          textColor: Colors.white,
+                          bgColor: PRIMARY_COLOR,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 16.0,
+                      ),
+                      _RegisterText(context: context),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

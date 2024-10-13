@@ -30,93 +30,96 @@ class _RegisterScreenState extends State<RegisterScreen> {
           horizontal: 24.0,
         ),
         child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 48.0,
-              ),
-              Text(
-                '회원가입',
-                style: TextStyle(
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.w700,
+          child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 48.0,
                 ),
-              ),
-              SizedBox(
-                height: 80.0,
-              ),
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    CustomTextFormField(
-                      controller: _emailController,
-                      validator: (value) {
-                        if (value.isEmpty) {
-                          // null과 isEmpty는 다름!
-                          return '이메일을 입력해주세요';
-                        } else {
-                          return null;
-                        }
-                      },
-                      onChanged: (data) {},
-                      hintText: '이메일을 입력해주세요',
-                    ),
-                    SizedBox(
-                      height: 8.0,
-                    ),
-                    CustomTextFormField(
-                      controller: _pwController,
-                      validator: (value) {
-                        if (value.isEmpty) {
-                          return '비밀번호를 입력해주세요';
-                        } else {
-                          return null;
-                        }
-                      },
-                      onChanged: (data) {},
-                      hintText: '비밀번호를 입력해주세요',
-                      obscureText: true,
-                    ),
-                    SizedBox(
-                      height: 8.0,
-                    ),
-                    CustomTextFormField(
-                      controller: _confirmPwController,
-                      validator: (value) {
-                        if (value.isEmpty) {
-                          return '비밀번호를 확인해주세요';
-                        } else if (value != _pwController.text) {
-                          return '비밀번호가 일치하지 않아요';
-                        } else {
-                          return null;
-                        }
-                      },
-                      onChanged: (data) {},
-                      hintText: '비밀번호를 확인해주세요',
-                      obscureText: true,
-                    ),
-                    SizedBox(
-                      height: 20.0,
-                    ),
-                    GestureDetector(
-                      onTap: () async {
-                        signUp();
-                      },
-                      child: CustomButton(
-                        text: '회원가입',
-                        textColor: Colors.white,
-                        bgColor: PRIMARY_COLOR,
+                Text(
+                  '회원가입',
+                  style: TextStyle(
+                    fontSize: 24.0,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(
+                  height: 80.0,
+                ),
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      CustomTextFormField(
+                        controller: _emailController,
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            // null과 isEmpty는 다름!
+                            return '이메일을 입력해주세요';
+                          } else {
+                            return null;
+                          }
+                        },
+                        onChanged: (data) {},
+                        hintText: '이메일을 입력해주세요',
                       ),
-                    ),
-                    SizedBox(
-                      height: 16.0,
-                    ),
-                  ],
+                      SizedBox(
+                        height: 8.0,
+                      ),
+                      CustomTextFormField(
+                        controller: _pwController,
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return '비밀번호를 입력해주세요';
+                          } else {
+                            return null;
+                          }
+                        },
+                        onChanged: (data) {},
+                        hintText: '비밀번호를 입력해주세요',
+                        obscureText: true,
+                      ),
+                      SizedBox(
+                        height: 8.0,
+                      ),
+                      CustomTextFormField(
+                        controller: _confirmPwController,
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return '비밀번호를 확인해주세요';
+                          } else if (value != _pwController.text) {
+                            return '비밀번호가 일치하지 않아요';
+                          } else {
+                            return null;
+                          }
+                        },
+                        onChanged: (data) {},
+                        hintText: '비밀번호를 확인해주세요',
+                        obscureText: true,
+                      ),
+                      SizedBox(
+                        height: 20.0,
+                      ),
+                      GestureDetector(
+                        onTap: () async {
+                          signUp();
+                        },
+                        child: CustomButton(
+                          text: '회원가입',
+                          textColor: Colors.white,
+                          bgColor: PRIMARY_COLOR,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 16.0,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -137,6 +140,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         final user = <String, String>{
           "name": '${email.substring(0, email.indexOf('@'))}',
           "email": _emailController.text,
+          "likes": 0.toString(),
         };
         credential.user!.sendEmailVerification(); // 비즈니스의 관점에서 빼는 게 좋을지도...
         await db

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:unitory_project/Item/view/item_rent_screen.dart';
 import 'package:unitory_project/providers/login_provider.dart';
+import 'package:unitory_project/user/view/login_screen.dart';
 
 import '../const/colors.dart';
 
@@ -46,7 +47,15 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              // 임시로 로그아웃 버튼으로 사용
+              Provider.of<LoginProvider>(context, listen: false).signOut();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (_) => LoginScreen(),
+                ),
+              );
+            },
             icon: Icon(
               Icons.search_outlined,
               size: 32.0,

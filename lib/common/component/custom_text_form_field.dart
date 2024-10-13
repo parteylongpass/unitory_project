@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../const/colors.dart';
 
@@ -8,9 +9,11 @@ class CustomTextFormField extends StatelessWidget {
   final String? errorText;
   final bool obscureText;
   final bool autofocus;
-  final ValueChanged<String>? onChanged;
+  final ValueChanged<String> onChanged;
   final TextEditingController? controller;
   final FormFieldValidator? validator;
+  final int? maxLines;
+  final TextInputType? keyboardType;
 
   const CustomTextFormField({
     super.key,
@@ -21,6 +24,8 @@ class CustomTextFormField extends StatelessWidget {
     required this.onChanged,
     this.controller,
     this.validator,
+    this.maxLines,
+    this.keyboardType,
   });
 
   @override
@@ -33,6 +38,8 @@ class CustomTextFormField extends StatelessWidget {
     );
 
     return TextFormField(
+      keyboardType: keyboardType,
+      maxLines: maxLines?? 1,
       controller: controller,
       validator: validator,
       cursorColor: PRIMARY_COLOR,
