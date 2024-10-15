@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:unitory_project/Item/model/item_model.dart';
 import 'package:unitory_project/common/component/custom_button.dart';
 import 'package:unitory_project/common/component/custom_text_form_field.dart';
@@ -18,6 +22,10 @@ class _ItemRentScreenState extends State<ItemRentScreen> {
   bool isWeekSelected = false;
   bool isDaySelected = false;
   late List<bool> isSelected;
+  int count = 0;
+
+  List<XFile> images = [];
+  final ImagePicker imagePicker = ImagePicker();
 
   @override
   void initState() {
@@ -54,16 +62,65 @@ class _ItemRentScreenState extends State<ItemRentScreen> {
                     SizedBox(
                       height: 8.0,
                     ),
-                    Container(
-                      width: 72.0,
-                      height: 72.0,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8.0),
-                          color: Color(0xFFD1D1D1)),
-                      child: Icon(
-                        Icons.camera_alt_outlined,
-                        color: Color(0xFF8E8E8E),
-                      ),
+                    GestureDetector(
+                      onTap: () {
+                        if(count != 3) {
+                          count == 2 ? getImage() : getImages();
+                        } else {
+                          Fluttertoast.showToast(msg: '사진을 지우고 다시 선택해주세요.');
+                        }
+                      },
+                      child: images.isEmpty
+                          ? _imageUploadButton()
+                          : Row(
+                              children: [
+                                _imageUploadButton(),
+                                Row(
+                                  children: images
+                                      .map(
+                                        (e) => Padding(
+                                          padding: EdgeInsets.only(
+                                            left: 8.0,
+                                          ),
+                                          child: Stack(
+                                            children: [
+                                              Container(
+                                                width: 72.0,
+                                                height: 72.0,
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                    8.0,
+                                                  ),
+                                                  image: DecorationImage(
+                                                    image:
+                                                        FileImage(File(e.path)),
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                ),
+                                              ),
+                                              Positioned(
+                                                top: 0,
+                                                right: 0,
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    removeImage(e);
+                                                  },
+                                                  child: Icon(
+                                                    Icons.cancel_outlined,
+                                                    color: Colors.white,
+                                                    size: 24.0,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                                )
+                              ],
+                            ),
                     ),
                     SizedBox(
                       height: 16.0,
@@ -150,5 +207,60 @@ class _ItemRentScreenState extends State<ItemRentScreen> {
     setState(() {
       isSelected = [isMonthSelected, isWeekSelected, isDaySelected];
     });
+  }
+
+  Future<void> getImages() async {
+    final List<XFile>? pickedFiles = await imagePicker.pickMultiImage(limit: 3 - count);
+    if (pickedFiles != null) {
+      setState(() {
+        images.addAll(pickedFiles);
+        count = images.length;
+      });
+    }
+  }
+
+  Future<void> getImage() async {
+    final XFile? pickedFile = await imagePicker.pickImage(source: ImageSource.gallery);
+    if(pickedFile != null) {
+      setState(() {
+        images.add(pickedFile);
+        count = images.length;
+      });
+    }
+  }
+
+  void removeImage(XFile image) {
+    setState(() {
+      images.remove(image);
+      count = images.length;
+    });
+  }
+
+  Widget _imageUploadButton() {
+    return Stack(
+      children: [
+        Container(
+          width: 72.0,
+          height: 72.0,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8.0),
+              color: Color(0xFFD1D1D1)),
+          child: Icon(
+            Icons.camera_alt_outlined,
+            color: Color(0xFF8E8E8E),
+          ),
+        ),
+        Positioned(
+          right: 2,
+          bottom: 2,
+          child: Row(
+            children: [
+              Text(count.toString()),
+              Text('/3'),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
