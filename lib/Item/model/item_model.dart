@@ -5,7 +5,7 @@ enum Category { manTop, manBottom, womanTop, womanBottom, etc }
 class ItemModel {
   final String itemID;
   final String userID;
-  final String name;
+  final String title;
   final String thumbUrl;
   final ItemRentalPeriodType itemRentalPeriodType;
   final int price;
@@ -16,7 +16,7 @@ class ItemModel {
   ItemModel({
     required this.itemID,
     required this.userID,
-    required this.name,
+    required this.title,
     required this.thumbUrl,
     required this.itemRentalPeriodType,
     required this.price,
