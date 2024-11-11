@@ -1,9 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:unitory_project/Item/view/item_rent_screen.dart';
 import 'package:unitory_project/providers/login_provider.dart';
 import 'package:unitory_project/user/view/login_screen.dart';
 
+import '../../Item/component/item_card.dart';
+import '../../Item/model/item_model.dart';
 import '../const/colors.dart';
 
 class RootTab extends StatefulWidget {
@@ -29,7 +32,7 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    // Provider가 잘 동작하는지 테스트
+    // Provider가 잘 동작하는지 테스트 -> user.~로 확인 가능
     final user = Provider.of<LoginProvider>(context, listen: false).user;
 
     return Scaffold(
@@ -104,8 +107,29 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: TabBarView(
         children: [
-          Center(
-            child: Text('${user!.email}'),
+          FutureBuilder<List<ItemCard>>(
+            future: fetchAllItems(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(child: Text('No items available.'));
+              } else {
+                return ListView.separated(
+                  padding: EdgeInsets.all(12.0),
+                  itemCount: snapshot.data!.length,
+                  itemBuilder: (context, index) {
+                    return snapshot.data![index];
+                  },
+                  separatorBuilder: (context, index) => Divider(
+                    color: Colors.grey[300], // 구분선 색상
+                    thickness: 1.0,          // 구분선 두께
+                  ),
+                );
+              }
+            },
           ),
           Container(
             color: Colors.redAccent,
@@ -158,5 +182,48 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
         currentIndex: tabController.index,
       ),
     );
+  }
+
+  Future<List<ItemCard>> fetchAllItems() async {
+    List<ItemCard> itemCards = [];
+
+    final db = FirebaseFirestore.instance;
+
+    // users 컬렉션의 모든 유저 문서 가져오기
+    final usersSnapshot = await db.collection("users").get();
+
+    for (var userDoc in usersSnapshot.docs) {
+      final itemsSnapshot = await userDoc.reference.collection("items").get();
+
+      for (var itemDoc in itemsSnapshot.docs) {
+        final data = itemDoc.data();
+
+        String thumbUrl = data['thumbUrl'];
+        String title = data['title'];
+        int price = int.parse(data['price']);
+        ItemRentalPeriodType itemRentalPeriodType = parseType(data['itemRentalPeriodType']);
+        DateTime uploadTime = DateTime.parse(data['uploadTime']);
+
+        itemCards.add(ItemCard(
+          thumbUrl: thumbUrl,
+          title: title,
+          price: price,
+          itemRentalPeriodType: itemRentalPeriodType,
+          uploadTime: uploadTime,
+        ));
+      }
+    }
+
+    return itemCards;
+  }
+
+  ItemRentalPeriodType parseType(String type) {
+    if(type == "ItemPeriodType.month") {
+      return ItemRentalPeriodType.month;
+    } else if(type == "ItemPeriodType.week") {
+      return ItemRentalPeriodType.week;
+    } else {
+      return ItemRentalPeriodType.day;
+    }
   }
 }

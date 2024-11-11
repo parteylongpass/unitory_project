@@ -327,7 +327,7 @@ class _ItemRentScreenState extends State<ItemRentScreen> {
           // 파일 경로 설정
           final fileRef = "${uid}/${DateTime.now().millisecondsSinceEpoch}";
 
-          // 파일 업로드 -> 이 부분에서 안 넘어가는 중...
+          // 파일 업로드
           final storageRef = FirebaseStorage.instance.ref();
           try {
             await storageRef.child(fileRef).putFile(file);
@@ -349,7 +349,8 @@ class _ItemRentScreenState extends State<ItemRentScreen> {
         "title": _titleController.text,
         "description": _descriptionController.text,
         "price": _priceController.text,
-        "itemRentalPeriodTime": itemRentalPeriodType.toString(),
+        "itemRentalPeriodType": itemRentalPeriodType.toString(),
+        "uploadTime": DateTime.now().toString(),
       };
 
       // 유저 필드의 items 컬렉션에 업로드한 물품 데이터 추가
@@ -368,9 +369,5 @@ class _ItemRentScreenState extends State<ItemRentScreen> {
       Fluttertoast.showToast(msg: "업로드 성공!");
       Navigator.of(context).pop(); // 다시 홈 화면으로 이동
     }
-  }
-
-  Widget renderCircularProgressIndicator() {
-    return CircularProgressIndicator();
   }
 }
