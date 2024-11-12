@@ -77,13 +77,13 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
                       SizedBox(
                         height: 20.0,
                       ),
-                      GestureDetector(
-                        onTap: _onLoginButtonTap,
-                        child: CustomButton(
-                          text: '로그인',
-                          textColor: Colors.white,
-                          bgColor: PRIMARY_COLOR,
-                        ),
+                      CustomButton(
+                        onCustomButtonPressed: () {
+                          _onLoginButtonTap();
+                        },
+                        text: '로그인',
+                        textColor: Colors.white,
+                        bgColor: PRIMARY_COLOR,
                       ),
                       SizedBox(
                         height: 16.0,

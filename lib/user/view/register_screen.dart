@@ -102,15 +102,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       SizedBox(
                         height: 20.0,
                       ),
-                      GestureDetector(
-                        onTap: () async {
+                      CustomButton(
+                        onCustomButtonPressed: () {
                           signUp();
                         },
-                        child: CustomButton(
-                          text: '회원가입',
-                          textColor: Colors.white,
-                          bgColor: PRIMARY_COLOR,
-                        ),
+                        text: '회원가입',
+                        textColor: Colors.white,
+                        bgColor: PRIMARY_COLOR,
                       ),
                       SizedBox(
                         height: 16.0,

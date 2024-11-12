@@ -42,7 +42,7 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
           'UNITORY',
           style: TextStyle(
             fontSize: 24.0,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w900,
             color: BODY_TEXT_COLOR,
           ),
         ),
@@ -107,29 +107,33 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: TabBarView(
         children: [
-          FutureBuilder<List<ItemCard>>(
-            future: fetchAllItems(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Center(child: Text('No items available.'));
-              } else {
-                return ListView.separated(
-                  padding: EdgeInsets.all(12.0),
-                  itemCount: snapshot.data!.length,
-                  itemBuilder: (context, index) {
-                    return snapshot.data![index];
-                  },
-                  separatorBuilder: (context, index) => Divider(
-                    color: Colors.grey[300], // 구분선 색상
-                    thickness: 1.0,          // 구분선 두께
-                  ),
-                );
-              }
+          RefreshIndicator(
+            onRefresh: () async {
+              await fetchAllItems(); // 새로고침 시 fetchAllItems 호출
+              setState(() {}); // 상태를 갱신하여 UI 업데이트
             },
+            child: FutureBuilder<List<ItemCard>>(
+              future: fetchAllItems(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text('No items available.'));
+                } else {
+                  return ListView.separated(
+                    padding: EdgeInsets.all(12.0),
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, index) {
+                      return snapshot.data![index];
+                    },
+                    separatorBuilder: (context, index) =>
+                        SizedBox(height: 16.0),
+                  );
+                }
+              },
+            ),
           ),
           Container(
             color: Colors.redAccent,
@@ -192,35 +196,40 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
     // users 컬렉션의 모든 유저 문서 가져오기
     final usersSnapshot = await db.collection("users").get();
 
-    for (var userDoc in usersSnapshot.docs) {
-      final itemsSnapshot = await userDoc.reference.collection("items").get();
+    final itemsSnapshot = await db
+        .collection("items")
+        .orderBy(
+          "uploadTime",
+          descending: true,
+        )
+        .get();
 
-      for (var itemDoc in itemsSnapshot.docs) {
-        final data = itemDoc.data();
+    for (var itemDoc in itemsSnapshot.docs) {
+      final data = itemDoc.data();
 
-        String thumbUrl = data['thumbUrl'];
-        String title = data['title'];
-        int price = int.parse(data['price']);
-        ItemRentalPeriodType itemRentalPeriodType = parseType(data['itemRentalPeriodType']);
-        DateTime uploadTime = DateTime.parse(data['uploadTime']);
+      String thumbUrl = data['thumbUrl'];
+      String title = data['title'];
+      int price = int.parse(data['price']);
+      ItemRentalPeriodType itemRentalPeriodType =
+          parseType(data['itemRentalPeriodType']);
+      DateTime uploadTime = DateTime.parse(data['uploadTime']);
 
-        itemCards.add(ItemCard(
-          thumbUrl: thumbUrl,
-          title: title,
-          price: price,
-          itemRentalPeriodType: itemRentalPeriodType,
-          uploadTime: uploadTime,
-        ));
-      }
+      itemCards.add(ItemCard(
+        thumbUrl: thumbUrl,
+        title: title,
+        price: price,
+        itemRentalPeriodType: itemRentalPeriodType,
+        uploadTime: uploadTime,
+      ));
     }
 
     return itemCards;
   }
 
   ItemRentalPeriodType parseType(String type) {
-    if(type == "ItemPeriodType.month") {
+    if (type == "ItemRentalPeriodType.month") {
       return ItemRentalPeriodType.month;
-    } else if(type == "ItemPeriodType.week") {
+    } else if (type == "ItemRentalPeriodType.week") {
       return ItemRentalPeriodType.week;
     } else {
       return ItemRentalPeriodType.day;

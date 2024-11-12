@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:unitory_project/Item/model/item_model.dart';
+import 'package:unitory_project/common/const/colors.dart';
 
 class ItemCard extends StatelessWidget {
   final String thumbUrl;
@@ -18,38 +19,91 @@ class ItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        ClipRRect(
-          child: Image.network(thumbUrl, width: 100, height: 100, fit: BoxFit.cover,),
-          borderRadius: BorderRadius.circular(12.0),
-        ),
-        SizedBox(width: 12.0,),
-        Expanded(
-          child: Column(
-            children: [
-              Text(title),
-              Text(uploadTimeDiff(uploadTime)),
-              SizedBox(height: 12.0,),
-              Row(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            thumbUrl != ""
+                ? ClipRRect(
+                    child: Image.network(
+                      thumbUrl,
+                      width: 90,
+                      height: 90,
+                      fit: BoxFit.cover,
+                    ),
+                    borderRadius: BorderRadius.circular(10.0),
+                  )
+                : ClipRRect(
+                    child: Image.asset(
+                      "asset/img/no_img.jpg",
+                      width: 90,
+                      height: 90,
+                      fit: BoxFit.cover,
+                    ),
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+            SizedBox(
+              width: 16.0,
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(price.toString()),
-                  Text(whichType(itemRentalPeriodType)),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18.0,
+                    ),
+                  ),
+                  Text(
+                    uploadTimeDiff(uploadTime),
+                    style: TextStyle(
+                      color: BODY_TEXT_COLOR,
+                      fontSize: 12.0,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 14.0,
+                  ),
+                  Row(
+                    children: [
+                      Text(
+                        "${price.toString()}원",
+                        style: TextStyle(
+                            fontSize: 16.0,
+                            color: PRIMARY_COLOR,
+                            fontWeight: FontWeight.w700),
+                      ),
+                      Text(
+                        whichType(itemRentalPeriodType),
+                        style: TextStyle(
+                          color: BODY_TEXT_COLOR,
+                          fontSize: 12.0,
+                        ),
+                      ),
+                    ],
+                  )
                 ],
-              )
-            ],
-          ),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
   String uploadTimeDiff(DateTime uploadTime) {
     Duration diff = DateTime.now().difference(uploadTime);
 
-    if(diff.inDays >= 1) {
+    if (diff.inDays >= 1) {
       return "${diff.inDays}일 전";
-    } else if(diff.inHours >= 1) {
+    } else if (diff.inHours >= 1) {
       return "${diff.inHours}시간 전";
     } else {
       return "${diff.inMinutes}분 전";
@@ -57,12 +111,12 @@ class ItemCard extends StatelessWidget {
   }
 
   String whichType(ItemRentalPeriodType type) {
-    if(type == "ItemRentalPeriodType.month") {
-      return "/월";
-    } else if(type == "ItemRentalPeriodType.week") {
-      return "/주";
+    if (type == ItemRentalPeriodType.month) {
+      return " /월";
+    } else if (type == ItemRentalPeriodType.week) {
+      return " /주";
     } else {
-      return "/일";
+      return " /일";
     }
   }
 }

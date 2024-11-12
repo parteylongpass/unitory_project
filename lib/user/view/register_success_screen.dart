@@ -76,15 +76,13 @@ class RegisterSuccessScreen extends StatelessWidget {
                 padding: EdgeInsets.symmetric(
                   horizontal: 0.0,
                 ),
-                child: GestureDetector(
-                  onTap: () {
+                child: CustomButton(
+                  onCustomButtonPressed: () {
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },
-                  child: CustomButton(
-                    text: '처음으로 돌아가기',
-                    textColor: Colors.white,
-                    bgColor: PRIMARY_COLOR,
-                  ),
+                  text: '처음으로 돌아가기',
+                  textColor: Colors.white,
+                  bgColor: PRIMARY_COLOR,
                 ),
               )
             ],

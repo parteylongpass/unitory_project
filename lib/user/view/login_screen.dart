@@ -18,19 +18,17 @@ class LoginScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _renderLogoText(),
-              GestureDetector(
-                onTap: () {
+              CustomButton(
+                onCustomButtonPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) => EmailLoginScreen(),
                     ),
                   );
                 },
-                child: CustomButton(
-                  text: '이메일로 로그인',
-                  textColor: Colors.white,
-                  bgColor: PRIMARY_COLOR,
-                ),
+                text: '이메일로 로그인',
+                textColor: Colors.white,
+                bgColor: PRIMARY_COLOR,
               ),
               const SizedBox(
                 height: 8.0,
