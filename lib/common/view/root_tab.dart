@@ -155,7 +155,12 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
                     padding: EdgeInsets.all(12.0),
                     itemCount: snapshot.data!.length,
                     itemBuilder: (context, i) {
-                      return snapshot.data![i];
+                      if (i < itemCards.length) {
+                        return itemCards[i];
+                      } else {
+                        // 잘못된 인덱스로 접근하지 않도록 기본값 반환
+                        return SizedBox.shrink();
+                      }
                     },
                     separatorBuilder: (context, i) => SizedBox(height: 16.0),
                   ),
