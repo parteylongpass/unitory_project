@@ -5,6 +5,7 @@ class CustomButton extends StatelessWidget {
   final Color textColor;
   final Color? bgColor;
   final GestureTapCallback? onCustomButtonPressed;
+  final double? textSize;
 
   const CustomButton({
     super.key,
@@ -12,6 +13,7 @@ class CustomButton extends StatelessWidget {
     required this.textColor,
     this.bgColor,
     this.onCustomButtonPressed,
+    this.textSize,
   });
 
   @override
@@ -33,7 +35,7 @@ class CustomButton extends StatelessWidget {
             style: TextStyle(
               color: textColor,
               fontWeight: FontWeight.w700,
-              fontSize: 16.0,
+              fontSize: textSize?? 16.0,
             ),
           ),
         ),

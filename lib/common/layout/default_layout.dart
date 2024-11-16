@@ -4,7 +4,7 @@ class DefaultLayout extends StatelessWidget {
   final Widget child;
   final Color? backgroundColor;
   final String? title;
-  final BottomNavigationBar? bottomNavigationBar;
+  final Widget? bottomNavigationBar;
 
   const DefaultLayout({
     super.key,

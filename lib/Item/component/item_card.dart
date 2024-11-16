@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:unitory_project/Item/model/item_model.dart';
+import 'package:unitory_project/Item/view/item_detail_screen.dart';
 import 'package:unitory_project/common/const/colors.dart';
 
 class ItemCard extends StatelessWidget {
@@ -19,80 +20,85 @@ class ItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10.0),
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            thumbUrl != ""
-                ? ClipRRect(
-                    child: Image.network(
-                      thumbUrl,
-                      width: 90,
-                      height: 90,
-                      fit: BoxFit.cover,
-                    ),
-                    borderRadius: BorderRadius.circular(10.0),
-                  )
-                : ClipRRect(
-                    child: Image.asset(
-                      "asset/img/no_img.jpg",
-                      width: 90,
-                      height: 90,
-                      fit: BoxFit.cover,
-                    ),
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-            SizedBox(
-              width: 16.0,
-            ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 18.0,
-                    ),
-                  ),
-                  Text(
-                    uploadTimeDiff(uploadTime),
-                    style: TextStyle(
-                      color: BODY_TEXT_COLOR,
-                      fontSize: 12.0,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 14.0,
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        "${price.toString()}원",
-                        style: TextStyle(
-                            fontSize: 16.0,
-                            color: PRIMARY_COLOR,
-                            fontWeight: FontWeight.w700),
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => ItemDetailScreen()));
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              thumbUrl != ""
+                  ? ClipRRect(
+                      child: Image.network(
+                        thumbUrl,
+                        width: 90,
+                        height: 90,
+                        fit: BoxFit.cover,
                       ),
-                      Text(
-                        whichType(itemRentalPeriodType),
-                        style: TextStyle(
-                          color: BODY_TEXT_COLOR,
-                          fontSize: 12.0,
-                        ),
+                      borderRadius: BorderRadius.circular(10.0),
+                    )
+                  : ClipRRect(
+                      child: Image.asset(
+                        "asset/img/no_img.jpg",
+                        width: 90,
+                        height: 90,
+                        fit: BoxFit.cover,
                       ),
-                    ],
-                  )
-                ],
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+              SizedBox(
+                width: 16.0,
               ),
-            ),
-          ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 18.0,
+                      ),
+                    ),
+                    Text(
+                      uploadTimeDiff(uploadTime),
+                      style: TextStyle(
+                        color: BODY_TEXT_COLOR,
+                        fontSize: 12.0,
+                      ),
+                    ),
+                    SizedBox(
+                      height: 14.0,
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          "${price.toString()}원",
+                          style: TextStyle(
+                              fontSize: 16.0,
+                              color: PRIMARY_COLOR,
+                              fontWeight: FontWeight.w700),
+                        ),
+                        Text(
+                          whichType(itemRentalPeriodType),
+                          style: TextStyle(
+                            color: BODY_TEXT_COLOR,
+                            fontSize: 12.0,
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
