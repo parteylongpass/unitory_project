@@ -330,14 +330,16 @@ class _ItemRentScreenState extends State<ItemRentScreen> {
       });
       final uid = Provider.of<LoginProvider>(context, listen: false).user!.uid;
 
+      final sessionID = DateTime.now().millisecondsSinceEpoch;
       String? thumbUrl;
+      String fileRef = "";
       if (images.isNotEmpty) {
         for (int i = 0; i < images.length; i++) {
           // XFile 객체를 File 객체로 변환
           File file = File(images[i].path);
 
           // 파일 경로 설정
-          final fileRef = "${uid}/${DateTime.now().millisecondsSinceEpoch}";
+          fileRef = "${uid}/${sessionID}/${DateTime.now().millisecondsSinceEpoch}";
 
           // 파일 업로드
           final storageRef = FirebaseStorage.instance.ref();
@@ -345,6 +347,14 @@ class _ItemRentScreenState extends State<ItemRentScreen> {
             await storageRef.child(fileRef).putFile(file);
           } on FirebaseException catch (e) {
             print(e.message);
+
+            // Transaction
+            // Storage에서 업로드된 데이터 삭제
+            try {
+              await storageRef.child(fileRef).delete();
+            } catch(deleteError) {
+              print("Failed to delete data from storage");
+            }
           }
 
           // 업로드한 첫 번째 파일의 다운로드 URL 가져오기 -> 썸네일로 사용하기 위해
@@ -362,16 +372,30 @@ class _ItemRentScreenState extends State<ItemRentScreen> {
         "price": _priceController.text,
         "itemRentalPeriodType": itemRentalPeriodType.toString(),
         "uploadTime": DateTime.now().toString(),
-        "userID": uid
+        "userID": uid,
+        "fileRef": "${uid}/${sessionID}",
       };
 
       String itemID = DateTime.now().millisecondsSinceEpoch.toString();
-      await FirebaseFirestore.instance
-          .collection("items")
-          .doc(itemID)
-          .set(item)
-          .onError((e, _) => print("Error writing document: $e"));
 
+      try {
+        await FirebaseFirestore.instance
+            .collection("items")
+            .doc(itemID)
+            .set(item);
+      } on FirebaseException catch(e) {
+        print(e.message);
+
+        // Transaction
+        // DB에서 업로드된 데이터 삭제
+        try {
+          await FirebaseFirestore.instance.collection("itmes").doc(itemID).delete();
+        } catch(deleteError) {
+          print("Failed to delete data from DB");
+
+          Fluttertoast.showToast(msg: "업로드 실패. 네트워크를 확인해주세요.");
+        }
+      }
       isUploading = false;
       Fluttertoast.showToast(msg: "업로드 성공!");
       Navigator.of(context).pop(); // 다시 홈 화면으로 이동

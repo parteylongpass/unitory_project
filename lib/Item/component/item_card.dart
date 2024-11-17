@@ -10,19 +10,43 @@ class ItemCard extends StatelessWidget {
   final ItemRentalPeriodType itemRentalPeriodType;
   final DateTime uploadTime;
 
-  const ItemCard(
-      {super.key,
-      required this.thumbUrl,
-      required this.title,
-      required this.price,
-      required this.itemRentalPeriodType,
-      required this.uploadTime});
+  // 디테일 화면 구현을 위한 필드들
+  final String userID;
+  final String description;
+  final String fileRef;
+
+  const ItemCard({
+    super.key,
+    required this.thumbUrl,
+    required this.title,
+    required this.price,
+    required this.itemRentalPeriodType,
+    required this.uploadTime,
+    required this.userID,
+    required this.description,
+    required this.fileRef,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (_) => ItemDetailScreen()));
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => ItemDetailScreen(
+              thumbUrl: thumbUrl,
+              title: title,
+              price: price,
+              itemRentalPeriodType: itemRentalPeriodType,
+              uploadTime: uploadTime,
+
+              // 디테일 화면 구현을 위한 필드들
+              userID: userID,
+              description: description,
+              fileRef: fileRef,
+            ),
+          ),
+        );
       },
       child: Container(
         decoration: BoxDecoration(

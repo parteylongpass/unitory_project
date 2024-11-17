@@ -115,12 +115,22 @@ class _ItemScreenState extends State<ItemScreen> {
                 parseType(data['itemRentalPeriodType']);
                 DateTime uploadTime = DateTime.parse(data['uploadTime']);
 
+                // 디테일 화면 구현을 위한 필드들
+                String description = data['description'];
+                String userID = data['userID'];
+                String fileRef = data['fileRef'];
+
                 itemCards.add(ItemCard(
                   thumbUrl: thumbUrl,
                   title: title,
                   price: price,
                   itemRentalPeriodType: itemRentalPeriodType,
                   uploadTime: uploadTime,
+
+                  // 디테일 화면 구현을 위한 필드들
+                  description: description,
+                  userID: userID,
+                  fileRef: fileRef,
                 ));
               }
             } else {
@@ -155,12 +165,22 @@ class _ItemScreenState extends State<ItemScreen> {
                 parseType(data['itemRentalPeriodType']);
                 DateTime uploadTime = DateTime.parse(data['uploadTime']);
 
+                // 디테일 화면 구현을 위한 필드들
+                String description = data['description'];
+                String userID = data['userID'];
+                String fileRef = data['fileRef'];
+
                 itemCards.add(ItemCard(
                   thumbUrl: thumbUrl,
                   title: title,
                   price: price,
                   itemRentalPeriodType: itemRentalPeriodType,
                   uploadTime: uploadTime,
+
+                  // 디테일 화면 구현을 위한 필드들
+                  description: description,
+                  userID: userID,
+                  fileRef: fileRef,
                 ));
               }
             } else {
