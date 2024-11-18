@@ -3,9 +3,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:unitory_project/common/component/custom_button.dart';
 import 'package:unitory_project/common/const/colors.dart';
 import 'package:unitory_project/common/layout/default_layout.dart';
+import 'package:unitory_project/providers/add_to_favorite_provider.dart';
+import 'package:unitory_project/providers/indicator_provider.dart';
 
 import '../model/item_model.dart';
 
@@ -21,8 +24,9 @@ class ItemDetailScreen extends StatefulWidget {
   final String description;
   final String fileRef;
 
-  // Carousel을 위한 변수
-  int current = 0;
+  // 캐싱을 위한 변수들
+  String userName = "유니토리사용자";
+  String userLikes = "0";
 
   ItemDetailScreen({
     super.key,
@@ -41,13 +45,18 @@ class ItemDetailScreen extends StatefulWidget {
 }
 
 class _ItemDetailScreenState extends State<ItemDetailScreen> {
-  bool addToFav = false;
-
   late final CarouselController carouselController;
 
   @override
   void initState() {
     carouselController = CarouselController();
+
+    // current를 0으로 초기화
+    // addToFav를 false로 초기화
+    Future.microtask(() {
+      context.read<IndicatorProvider>().initializeIndicator();
+      context.read<AddToFavoriteProvider>().initializeAddToFav();
+    });
     super.initState();
   }
 
@@ -116,7 +125,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
           );
         } else {
           // 데이터가 성공적으로 로드된 경우
-          List<String> images = snapshot.data!;
+          final images = snapshot.data!;
           return carousel(images);
         }
       },
@@ -161,10 +170,14 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
         } else {
           // 데이터가 성공적으로 로드된 경우
           final userInfo = snapshot.data!.data()!;
-          final userName = userInfo["name"];
-          final userLikes = userInfo['likes'];
 
-          return userCard(userName, userLikes);
+          // 불러온 값들을 로컬 변수에 저장(캐싱 흉내)
+          if (widget.userName == "유니토리사용자" && widget.userLikes == "0") {
+            widget.userName = userInfo["name"];
+            widget.userLikes = userInfo['likes'];
+          }
+
+          return userCard(widget.userName, widget.userLikes);
         }
       },
     );
@@ -285,9 +298,10 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
     }
   }
 
-  Future<List<String>> getAllImages() async {
+  Future<List<Image>> getAllImages() async {
     List<String> downloadUrls = [];
 
+    List<Image> imageList = [];
     try {
       // Storage 참조 접근
       final storageRef = FirebaseStorage.instance.ref().child(widget.fileRef);
@@ -299,9 +313,18 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
       for (var item in imgList.items) {
         String downloadUrl = await item.getDownloadURL();
         downloadUrls.add(downloadUrl);
+
+        // 미리 이미지들을 다운로드(캐싱 흉내)
+        imageList.add(
+          Image.network(
+            downloadUrl,
+            width: MediaQuery.of(context).size.width,
+            fit: BoxFit.cover,
+          ),
+        );
       }
 
-      return downloadUrls;
+      return imageList;
     } catch (e) {
       print("Failed to fetch images from storage");
       return [];
@@ -309,37 +332,39 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
   }
 
   Widget addToFavButton() {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          addToFav = !addToFav;
-        });
-      },
-      child: Container(
-        decoration: BoxDecoration(
-            border: Border.all(
-              color: BODY_TEXT_COLOR,
-            ),
-            borderRadius: BorderRadius.circular(
-              8.0,
-            )),
-        child: Padding(
-          padding: EdgeInsets.all(
-            12.0,
-          ),
-          child: addToFav
-              ? Icon(
-                  Icons.favorite,
-                  color: Colors.red,
-                  size: 28.0,
-                )
-              : Icon(
-                  Icons.favorite_border,
+    return Consumer<AddToFavoriteProvider>(
+      builder: (context, addToFavProvider, child) {
+        return GestureDetector(
+          onTap: () {
+            addToFavProvider.changeAddToFav();
+          },
+          child: Container(
+            decoration: BoxDecoration(
+                border: Border.all(
                   color: BODY_TEXT_COLOR,
-                  size: 28.0,
                 ),
-        ),
-      ),
+                borderRadius: BorderRadius.circular(
+                  8.0,
+                )),
+            child: Padding(
+              padding: EdgeInsets.all(
+                12.0,
+              ),
+              child: addToFavProvider.addToFav
+                  ? Icon(
+                      Icons.favorite,
+                      color: Colors.red,
+                      size: 28.0,
+                    )
+                  : Icon(
+                      Icons.favorite_border,
+                      color: BODY_TEXT_COLOR,
+                      size: 28.0,
+                    ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -354,66 +379,62 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
     );
   }
 
-  Widget carousel(List<String> images) {
-    return Stack(
-      children: [
-        CarouselSlider(
-          items: images.map((url) {
-            return Builder(
-              builder: (BuildContext context) {
-                return Image.network(
-                  url,
-                  width: MediaQuery.of(context).size.width,
-                  fit: BoxFit.cover,
-                );
+  Widget carousel(List<Image> images) {
+    return Consumer<IndicatorProvider>(
+        builder: (context, indicatorProvider, child) {
+      return Stack(
+        children: [
+          CarouselSlider(
+            items: images.map((image) {
+              return Builder(
+                builder: (BuildContext context) {
+                  return image;
+                },
+              );
+            }).toList(),
+            options: CarouselOptions(
+              initialPage: 0,
+              viewportFraction: 1,
+              height: MediaQuery.of(context).size.width,
+              onPageChanged: (index, reason) {
+                indicatorProvider.updateIndicator(index);
               },
-            );
-          }).toList(),
-          options: CarouselOptions(
-            initialPage: widget.current,
-            viewportFraction: 1,
-            height: MediaQuery.of(context).size.width,
-            onPageChanged: (index, reason) {
-              setState(() {
-                widget.current = index;
-              });
-            },
+            ),
           ),
-        ),
-        Positioned.fill(
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              margin: EdgeInsets.only(bottom: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: images.map((e) {
-                  return Container(
-                    width: 8.0,
-                    height: 8.0,
-                    margin: EdgeInsets.symmetric(horizontal: 4.0),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: (images[widget.current] == e)
-                          ? Colors.white // 현재 페이지는 흰색
-                          : Colors.grey, // 다른 페이지는 회색
-                    ),
-                  );
-                }).toList(),
+          Positioned.fill(
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                margin: EdgeInsets.only(bottom: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: images.map((e) {
+                    return Container(
+                      width: 8.0,
+                      height: 8.0,
+                      margin: EdgeInsets.symmetric(horizontal: 4.0),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: (images[indicatorProvider.current] == e)
+                            ? Colors.white // 현재 페이지는 흰색
+                            : Colors.grey, // 다른 페이지는 회색
+                      ),
+                    );
+                  }).toList(),
+                ),
               ),
             ),
           ),
-        ),
-      ],
-    );
+        ],
+      );
+    });
   }
 
   Widget userCard(String userName, String userLikes) {
     return Container(
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(
-              color: Colors.black.withOpacity(0.2), width: 0.5),
+          bottom: BorderSide(color: Colors.black.withOpacity(0.2), width: 0.5),
         ),
       ),
       child: Padding(
