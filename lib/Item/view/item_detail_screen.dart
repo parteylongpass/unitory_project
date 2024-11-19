@@ -446,6 +446,7 @@ class _ItemDetailScreenState extends State<ItemDetailScreen> {
             Icon(
               CupertinoIcons.person_alt_circle_fill,
               size: 44.0,
+              color: BODY_TEXT_COLOR,
             ),
             SizedBox(
               width: 6.0,

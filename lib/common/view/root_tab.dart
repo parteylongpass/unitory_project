@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:unitory_project/Item/view/item_rent_screen.dart';
 import 'package:unitory_project/providers/login_provider.dart';
 import 'package:unitory_project/user/view/login_screen.dart';
+import 'package:unitory_project/user/view/my_page_screen.dart';
 
 import '../../Item/view/item_screen.dart';
 import '../const/colors.dart';
@@ -73,35 +74,38 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
           )
         ],
       ),
-      floatingActionButton: Container(
-        width: 84.0,
-        height: 44.0,
-        child: FloatingActionButton(
-          elevation: 2.0,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => ItemRentScreen(),
+      floatingActionButton: tabController.index == 0
+          ? Container(
+              width: 84.0,
+              height: 44.0,
+              child: FloatingActionButton(
+                elevation: 2.0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20.0)),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ItemRentScreen(),
+                    ),
+                  );
+                },
+                child: FittedBox(
+                  child: Row(
+                    children: [
+                      Icon(Icons.add),
+                      Text(
+                        '글쓰기',
+                        style: TextStyle(
+                            fontSize: 16.0, fontWeight: FontWeight.w900),
+                      )
+                    ],
+                  ),
+                ),
+                backgroundColor: PRIMARY_COLOR,
+                foregroundColor: Colors.white,
               ),
-            );
-          },
-          child: FittedBox(
-            child: Row(
-              children: [
-                Icon(Icons.add),
-                Text(
-                  '글쓰기',
-                  style: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w900),
-                )
-              ],
-            ),
-          ),
-          backgroundColor: PRIMARY_COLOR,
-          foregroundColor: Colors.white,
-        ),
-      ),
+            )
+          : Container(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: TabBarView(
         children: [
@@ -112,9 +116,7 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
               child: Text('page1'),
             ),
           ),
-          Center(
-            child: Text('page2'),
-          ),
+          MyPageScreen(),
         ],
         controller: tabController,
         physics: NeverScrollableScrollPhysics(),
