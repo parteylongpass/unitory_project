@@ -110,13 +110,10 @@ class _RootTabState extends State<RootTab> with TickerProviderStateMixin {
       body: TabBarView(
         children: [
           ItemScreen(),
-          Container(
-            color: Colors.redAccent,
-            child: Center(
-              child: Text('page1'),
-            ),
+          Center(
+            child: Text('page1'),
           ),
-          MyPageScreen(),
+          MyPageScreen(userID: user!.uid,),
         ],
         controller: tabController,
         physics: NeverScrollableScrollPhysics(),
