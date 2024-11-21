@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:unitory_project/common/const/colors.dart';
@@ -28,6 +29,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
   // 프로필 편집
   String? profilePicUrl;
+  bool urlChangedToNull = false;
+  String? fileRef;
 
   XFile? profilePic;
   final imagePicker = ImagePicker();
@@ -124,6 +127,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
     final userData = userDoc.data();
     if (userData != null && userData["profilePic"] != "") {
       profilePicUrl = userData["profilePic"];
+      fileRef = userData["fileRef"];
+
       return profilePicUrl!;
     } else {
       return "";
@@ -143,50 +148,107 @@ class _MyPageScreenState extends State<MyPageScreen> {
   void removeImage() {
     setState(() {
       profilePic = null;
+
+      if (profilePicUrl != null) {
+        urlChangedToNull = true;
+        profilePicUrl = null;
+      }
     });
   }
 
   Future<void> uploadProfilePic() async {
-    if (profilePic == null) {
-      print("선택된 프로필 사진이 없습니다.");
+    // 기존에 프로필 사진이 있었는데 기본 이미지로 바꿨을 때
+    if (urlChangedToNull) {
+      final storageRef = FirebaseStorage.instance.ref();
+
+      // 스토리지의 데이터 삭제
+      try {
+        await storageRef.child(fileRef!).delete();
+      } catch (deleteError) {
+        print("Failed to delete data from storage");
+      }
+
+      // DB의 유저의 profilePic 필드 업데이트
+      try {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(widget.userID)
+            .update({"profilePic": "", "fileRef": ""});
+
+        print("Field 'profilePic', 'fileRef' updated successfully.");
+      } catch (e) {
+        print("Error updating field: $e");
+      }
+
+      setState(() {
+        profilePicUrl = null;
+      });
+      Fluttertoast.showToast(msg: "프로필 수정 완료!");
+      urlChangedToNull = false; // 변수 초기화
+      profilePic = null; // 변수 초기화
       return;
+    }
+
+    if (profilePic == null && !urlChangedToNull) {
+      Fluttertoast.showToast(msg: "변경사항이 없어요.");
+      return;
+    }
+
+    // 기존에 있던 사진에서 다른 사진으로 바꾸는 경우
+    if (profilePicUrl != null) {
+      final storageRef = FirebaseStorage.instance.ref();
+
+      // 스토리지의 데이터 삭제
+      try {
+        await storageRef.child(fileRef!).delete();
+      } catch (deleteError) {
+        print("Failed to delete data from storage");
+      }
     }
 
     // XFile 객체를 File 객체로 변환
     File file = File(profilePic!.path);
 
     // 파일 경로 설정
-    String fileRef =
+    String newFileRef =
         "${widget.userID}/${DateTime.now().millisecondsSinceEpoch}";
 
     // 파일 업로드
     final storageRef = FirebaseStorage.instance.ref();
     try {
-      await storageRef.child(fileRef).putFile(file);
+      await storageRef.child(newFileRef).putFile(file);
     } on FirebaseException catch (e) {
       print(e.message);
 
       // Transaction
       // Storage에서 업로드된 데이터 삭제
       try {
-        await storageRef.child(fileRef).delete();
+        await storageRef.child(newFileRef).delete();
       } catch (deleteError) {
         print("Failed to delete data from storage");
       }
     }
 
-    String profilePicUrl = await storageRef.child(fileRef).getDownloadURL();
+    String newProfilePicUrl =
+        await storageRef.child(newFileRef).getDownloadURL();
 
     try {
       await FirebaseFirestore.instance
           .collection('users')
           .doc(widget.userID)
-          .update({"profilePic": profilePicUrl});
+          .update({"profilePic": newProfilePicUrl, "fileRef": newFileRef});
 
-      print("Field 'profilePic' updated successfully.");
+      print("Field 'profilePic', 'fileRef' updated successfully.");
     } catch (e) {
       print("Error updating field: $e");
     }
+
+    setState(() {
+      profilePicUrl = newProfilePicUrl;
+    });
+
+    Fluttertoast.showToast(msg: "프로필 수정 완료!");
+    profilePic = null; // 변수 초기화
   }
 
   Widget userIconBuilder() {
@@ -198,33 +260,97 @@ class _MyPageScreenState extends State<MyPageScreen> {
           },
           child: Column(
             children: [
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: profilePic == null ? 80.0 : 60,
-                    height: profilePic == null ? 80.0 : 60,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: DecorationImage(
-                        image: FileImage(File(profilePic!.path)),
-                        fit: BoxFit.cover,
+              Padding(
+                padding: EdgeInsets.only(right: 10.0),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                          image: FileImage(File(profilePic!.path)),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.circle,
+                      size: 70,
+                      color: Colors.black.withOpacity(0.3),
+                    ),
+                    Icon(
+                      Icons.camera_alt_outlined,
+                      size: 32.0,
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  removeImage();
+                },
+                child: Container(
+                  width: 60.0,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4.0),
+                    color: BODY_TEXT_COLOR.withOpacity(0.5),
+                  ),
+                  alignment: Alignment.center,
+                  child: Padding(
+                    padding: EdgeInsets.all(1.0),
+                    child: Text(
+                      "기본이미지",
+                      style: TextStyle(
+                        fontSize: 10.0,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
                       ),
                     ),
                   ),
-                  Icon(
-                    Icons.circle,
-                    size: profilePic == null ? 80.0 : 70,
-                    color: Colors.black.withOpacity(0.3),
-                  ),
-                  Icon(
-                    Icons.camera_alt_outlined,
-                    size: 32.0,
-                    color: Colors.white,
-                  ),
-                ],
+                ),
               ),
-              if (profilePic != null)
+            ],
+          ),
+        );
+      } else {
+        // 편집 환경 - 선택된 사진이 없을 때
+        if (profilePicUrl != null) {
+          return GestureDetector(
+            onTap: () {
+              getImage();
+            },
+            child: Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(right: 10.0),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      ClipOval(
+                        child: Image.network(
+                          profilePicUrl!,
+                          width: 60,
+                          height: 60,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Icon(
+                        Icons.circle,
+                        size: 70,
+                        color: Colors.black.withOpacity(0.3),
+                      ),
+                      Icon(
+                        Icons.camera_alt_outlined,
+                        size: 32.0,
+                        color: Colors.white,
+                      ),
+                    ],
+                  ),
+                ),
                 GestureDetector(
                   onTap: () {
                     removeImage();
@@ -249,10 +375,11 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     ),
                   ),
                 ),
-            ],
-          ),
-        );
-      } else {
+              ],
+            ),
+          );
+        }
+
         return GestureDetector(
           onTap: () {
             getImage();
@@ -279,7 +406,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
           ),
         );
       }
-    } else { // 편집 환경이 아니라면
+    } else {
+      // 편집 환경이 아니라면
       // DB에 저장된 프로필 사진이 있다면
       return FutureBuilder(
         future: fetchProfilePicUrl(),
@@ -424,6 +552,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
             setState(() {
               edit = !edit;
               if (edit == false) {
+                Fluttertoast.showToast(msg: "프로필 수정중...");
                 uploadProfilePic();
               }
             });

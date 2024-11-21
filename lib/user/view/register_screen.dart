@@ -140,6 +140,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           "email": _emailController.text,
           "likes": 0.toString(),
           "profilePic": "",
+          "fileRef": "",
         };
         credential.user!.sendEmailVerification(); // 비즈니스의 관점에서 빼는 게 좋을지도...
         await db
