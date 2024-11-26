@@ -35,11 +35,23 @@ class _MyPageScreenState extends State<MyPageScreen> {
   XFile? profilePic;
   final imagePicker = ImagePicker();
 
+  bool nameEdit = false;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  late final TextEditingController _nameController;
+  bool nameChanged = false;
+
   @override
   void initState() {
     // '미리' 프로필 사진 url 불러오기
     fetchProfilePicUrl();
+    Future<String> userName = fetchUserName();
+    initializeController(userName);
     super.initState();
+  }
+
+  initializeController(Future<String> userName) async {
+    String name = await userName;
+    _nameController = TextEditingController(text: name);
   }
 
   @override
@@ -131,6 +143,21 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
       return profilePicUrl!;
     } else {
+      print("Failed fetching profile pic url");
+      return "";
+    }
+  }
+
+  Future<String> fetchUserName() async {
+    final userDoc = await FirebaseFirestore.instance
+        .collection("users")
+        .doc(widget.userID)
+        .get();
+    final userData = userDoc.data();
+    if (userData != null && userData["name"] != "") {
+      return userData['name'];
+    } else {
+      print("Failed fethcing user name");
       return "";
     }
   }
@@ -183,14 +210,15 @@ class _MyPageScreenState extends State<MyPageScreen> {
       setState(() {
         profilePicUrl = null;
       });
-      Fluttertoast.showToast(msg: "프로필 수정 완료!");
+      Fluttertoast.showToast(msg: "사진 수정 완료!");
       urlChangedToNull = false; // 변수 초기화
       profilePic = null; // 변수 초기화
       return;
     }
 
     if (profilePic == null && !urlChangedToNull) {
-      Fluttertoast.showToast(msg: "변경사항이 없어요.");
+      Fluttertoast.showToast(msg: "사진 변경사항이 없어요.");
+      nameChanged = false; // 변수 초기화
       return;
     }
 
@@ -247,7 +275,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
       profilePicUrl = newProfilePicUrl;
     });
 
-    Fluttertoast.showToast(msg: "프로필 수정 완료!");
+    Fluttertoast.showToast(msg: "사진 수정 완료!");
     profilePic = null; // 변수 초기화
   }
 
@@ -504,31 +532,55 @@ class _MyPageScreenState extends State<MyPageScreen> {
 
   Widget userName() {
     if (edit) {
-      return Row(
-        children: [
-          Text(
-            widget.userName,
-            style: TextStyle(
-              fontSize: 18.0,
-              fontWeight: FontWeight.w700,
-              color: Colors.black.withOpacity(0.7),
+      if (!nameEdit) {
+        return Row(
+          children: [
+            Text(
+              widget.userName,
+              style: TextStyle(
+                fontSize: 18.0,
+                fontWeight: FontWeight.w700,
+                color: Colors.black.withOpacity(0.7),
+              ),
+            ),
+            SizedBox(
+              width: 4.0,
+            ),
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  print("edit name button pressed");
+                  nameEdit = true;
+                });
+              },
+              child: Icon(
+                Icons.edit_square,
+                size: 18.0,
+                color: Colors.black.withOpacity(0.5),
+              ),
+            ),
+          ],
+        );
+      } else {
+        // 이름 편집
+        return Form(
+          key: _formKey,
+          child: SizedBox(
+            height: 26.0,
+            child: TextFormField(
+              cursorHeight: 12.0,
+              controller: _nameController,
+              validator: (value) {
+                if (value!.isEmpty) {
+                  return '한 글자 이상 입력해주세요';
+                } else {
+                  return null;
+                }
+              },
             ),
           ),
-          SizedBox(
-            width: 4.0,
-          ),
-          GestureDetector(
-            onTap: () {
-              print("edit name button pressed");
-            },
-            child: Icon(
-              Icons.edit_square,
-              size: 18.0,
-              color: Colors.black.withOpacity(0.5),
-            ),
-          ),
-        ],
-      );
+        );
+      }
     } else {
       return Text(
         widget.userName,
@@ -553,7 +605,15 @@ class _MyPageScreenState extends State<MyPageScreen> {
               edit = !edit;
               if (edit == false) {
                 Fluttertoast.showToast(msg: "프로필 수정중...");
+                sleep(Duration(milliseconds: 200));
+
+                // 사진 편집
                 uploadProfilePic();
+
+                sleep(Duration(milliseconds: 200));
+
+                // 이름 편집
+                changeName();
               }
             });
           },
@@ -670,5 +730,32 @@ class _MyPageScreenState extends State<MyPageScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> changeName() async {
+    if (_nameController.text == widget.userName) {
+      Fluttertoast.showToast(msg: "이름 변경사항이 없어요");
+      return;
+    }
+
+    if (_formKey.currentState!.validate()) {
+      widget.userName = _nameController.text;
+
+      // db 업데이트
+      try {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(widget.userID)
+            .update({"name": _nameController.text});
+
+        print("Field 'profilePic' updated successfully.");
+      } catch (e) {
+        print("Error updating field: $e");
+      }
+    }
+
+    nameChanged = true;
+    nameEdit = false;
+    Fluttertoast.showToast(msg: "이름 수정 완료!");
   }
 }
